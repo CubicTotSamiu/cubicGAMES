@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Tactical Game: Full Demo</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #1a1a1a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            user-select: none;
+        }
+        canvas {
+            box-shadow: 0 0 30px rgba(0,0,0,0.7);
+            cursor: default; /* Курсор меняется в зависимости от контекста */
+        }
+    </style>
+</head>
+<body>
+
+<canvas id="gameCanvas" width="960" height="540"></canvas>
+
+<script>
+/**
+ * TACTICAL SQUAD DEMO
+ * Объединенная версия: Меню + Исправленная графика + Полный геймплей
+ */
+
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+// ==========================================
+// НАСТРОЙКИ (ВАЖНО)
+// ==========================================
+
+// Ссылка для кнопки "ОТЗЫВ"
+const FEEDBACK_LINK = "https://t.me/ваша_ссылка"; 
+
+// Режим картинок:
+// false = У вас обычные картинки (png), где персонаж просто стоит. (НЕ БУДЕТ МОРГАТЬ)
+// true  = У вас спрайт-листы (кадровая анимация).
+const IS_SPRITE_SHEET = false; 
+
+// ==========================================
+// РЕСУРСЫ
+// ==========================================
+const sprites = {
+    bg: new Image(),
+    player: new Image(),
+    enemy: new Image()
+};
+
+sprites.bg.src = 'bg.png';
+sprites.player.src = 'player.png';
+sprites.enemy.src = 'enemy.png';
+
+// Цветовая палитра
+const COLORS = {
+    bg: '#7bc67b', 
+    tree: '#4a804a',
+    player: '#00b300',
+    enemy: '#e6e6cc', 
+    hp: '#ff4d4d',
+    armor: '#add8e6',
+    highlight: '#ffff00',
+    menuOverlay: 'rgba(0, 0, 0, 0.7)',
+    btnNormal: '#d4a017',
+    btnHover: '#ffbf00'
+};
+
+// ==========================================
+// СОСТОЯНИЕ ИГРЫ
+// ==========================================
+let gameState = 'MENU'; // MENU, PLAYER_TURN, ENEMY_TURN, ANIMATING, GAME_OVER
+let turnQueue = [];
+let units = [];
+let particles = [];
+let selectedAction = null; 
+
+// Для обработки кнопок меню
+let mouseX = 0;
+let mouseY = 0;
+const menuButtons = [
+    { text: "НАЧАТЬ БОЙ", x: 480, y: 280, w: 200, h: 50, action: 'START' },
+    { text: "ОТЗЫВ", x: 480, y: 350, w: 200, h: 50, action: 'FEEDBACK' }
+];
+
+const inventory = {
+    medkit: { count: 3, icon: '💉' },
+    grenade: { count: 1, icon: '💣' }
+};
+
+// ==========================================
+// КЛАССЫ
+// ==========================================
+
+class Unit {
+    constructor(id, team, x, y) {
+        this.id = id;
+        this.team = team;
+        this.x = x;
+        this.y = y;
+        
+        // Характеристики
+        this.maxHp = 100; this.hp = 100;
+        this.maxArmor = 50; this.armor = 50;
+        this.isDead = false;
+        
+        // Размеры отображения
+        this.width = 60;  // Ширина бойца на экране
+        this.height = 100; // Высота бойца на экране
+
+        // Анимация (используется только если IS_SPRITE_SHEET = true)
+        this.spriteW = 64; this.spriteH = 64; 
+        this.frameX = 0; this.maxFrame = 4;
+        this.gameFrame = 0; this.staggerFrames = 10;
+        this.actionState = 'IDLE'; 
+        this.onAnimComplete = null;
+    }
+
+    update() {
+        if (this.isDead) return;
+
+        // Логика спрайтов (если включена)
+        if (IS_SPRITE_SHEET) {
+            this.gameFrame++;
+            if (this.gameFrame % this.staggerFrames === 0) {
+                if (this.frameX < this.maxFrame - 1) {
+                    this.frameX++;
+                } else {
+                    if (this.actionState === 'ATTACK') {
+                        if (this.onAnimComplete) { this.onAnimComplete(); this.onAnimComplete = null; }
+                        this.actionState = 'IDLE';
+                    }
+                    this.frameX = 0;
+                }
+            }
+        }
+    }
+
+    playAttack(callback) {
+        if (IS_SPRITE_SHEET) {
+            this.actionState = 'ATTACK';
+            this.frameX = 0;
+            this.onAnimComplete = callback;
+        } else {
+            // Если статичная картинка — простая задержка перед уроном
+            setTimeout(() => {
+                callback();
+            }, 500);
+        }
+    }
+
+    draw() {
+        if (this.isDead) return;
+
+        // Тень
+        ctx.fillStyle = 'rgba(0,0,0,0.3)';
+        ctx.beginPath();
+        ctx.ellipse(this.x, this.y + this.height/2 - 5, 30, 10, 0, 0, Math.PI*2);
+        ctx.fill();
+
+        // Рисуем персонажа
+        const img = this.team === 'player' ? sprites.player : sprites.enemy;
+        const isLoaded = img.complete && img.naturalHeight !== 0;
+
+        if (isLoaded) {
+            ctx.save();
+            // Отразить врагов
+            if (this.team === 'enemy') {
+                ctx.translate(this.x, this.y);
+                ctx.scale(-1, 1);
+                ctx.translate(-this.x, -this.y);
+            }
+
+            if (IS_SPRITE_SHEET) {
+                // РЕЖИМ СПРАЙТОВ (вырезаем кадр)
+                let row = (this.actionState === 'ATTACK') ? 1 : 0;
+                ctx.drawImage(
+                    img, 
+                    this.frameX * this.spriteW, row * this.spriteH, this.spriteW, this.spriteH, 
+                    this.x - this.width/2, this.y - this.height/2, this.width, this.height
+                );
+            } else {
+                // РЕЖИМ КАРТИНКИ (масштабируем полную картинку)
+                ctx.drawImage(
+                    img, 
+                    0, 0, img.naturalWidth, img.naturalHeight, 
+                    this.x - this.width/2, this.y - this.height/2, this.width, this.height
+                );
+            }
+            ctx.restore();
+        } else {
+            // ФОЛЛБЭК (Квадраты, если нет картинки)
+            ctx.fillStyle = this.team === 'player' ? COLORS.player : COLORS.enemy;
+            ctx.fillRect(this.x - this.width/2, this.y - this.height/2, this.width, this.height);
+            ctx.fillStyle = '#ffccaa'; // Голова
+            ctx.fillRect(this.x - 15, this.y - this.height/2 - 15, 30, 30);
+        }
+
+        // Рамка активного хода
+        if (turnQueue.length > 0 && turnQueue[turnQueue.length-1].id === this.id) {
+            ctx.strokeStyle = COLORS.highlight;
+            ctx.lineWidth = 3;
+            ctx.strokeRect(this.x - this.width/2 - 5, this.y - this.height/2 - 25, this.width + 10, this.height + 35);
+        }
+
+        this.drawUI();
+    }
+
+    drawUI() {
+        const barW = 60; const barH = 6;
+        const startY = this.y - this.height/2 - 40;
+
+        // Armor
+        ctx.fillStyle = '#555'; ctx.fillRect(this.x - barW/2, startY, barW, barH);
+        ctx.fillStyle = COLORS.armor; ctx.fillRect(this.x - barW/2, startY, barW * (this.armor / this.maxArmor), barH);
+        // HP
+        ctx.fillStyle = '#555'; ctx.fillRect(this.x - barW/2, startY + barH + 2, barW, barH);
+        ctx.fillStyle = COLORS.hp; ctx.fillRect(this.x - barW/2, startY + barH + 2, barW * (this.hp / this.maxHp), barH);
+    }
+
+    takeDamage(amount) {
+        let remainingDmg = amount;
+        if (this.armor > 0) {
+            if (this.armor >= remainingDmg) { this.armor -= remainingDmg; remainingDmg = 0; } 
+            else { remainingDmg -= this.armor; this.armor = 0; }
+        }
+        this.hp -= remainingDmg;
+        spawnFloatingText('-' + amount, this.x, this.y - 100, '#ff0000');
+        
+        if (this.hp <= 0) {
+            this.hp = 0; this.isDead = true;
+            turnQueue = turnQueue.filter(u => u.id !== this.id);
+        }
+    }
+
+    heal(amount) {
+        this.hp = Math.min(this.hp + amount, this.maxHp);
+        spawnFloatingText('+' + amount, this.x, this.y - 100, '#00ff00');
+    }
+}
+
+class FloatingText {
+    constructor(text, x, y, color) {
+        this.text = text; this.x = x; this.y = y; this.color = color;
+        this.life = 60;
+    }
+    update() { this.y -= 1; this.life--; }
+    draw() {
+        ctx.globalAlpha = Math.max(0, this.life / 60);
+        ctx.fillStyle = this.color; ctx.font = 'bold 24px Arial';
+        ctx.strokeStyle = 'black'; ctx.lineWidth = 3;
+        ctx.strokeText(this.text, this.x, this.y);
+        ctx.fillText(this.text, this.x, this.y);
+        ctx.globalAlpha = 1;
+    }
+}
+
+// ==========================================
+// ЛОГИКА ИГРЫ
+// ==========================================
+
+function initGame() {
+    units = [];
+    particles = [];
+    inventory.medkit.count = 3;
+    inventory.grenade.count = 1;
+
+    // Игрок
+    units.push(new Unit(1, 'player', 200, 250));
+    units.push(new Unit(2, 'player', 200, 380));
+    units.push(new Unit(3, 'player', 120, 250));
+    units.push(new Unit(4, 'player', 120, 380));
+
+    // Враг
+    units.push(new Unit(5, 'enemy', 760, 250)); 
+    units.push(new Unit(6, 'enemy', 760, 380));
+    units.push(new Unit(7, 'enemy', 840, 250));
+    units.push(new Unit(8, 'enemy', 840, 380));
+
+    turnQueue = [...units]; 
+    nextTurn();
+}
+
+function nextTurn() {
+    // Проверка условий победы/поражения
+    const aliveP = units.filter(u => u.team === 'player' && !u.isDead).length;
+    const aliveE = units.filter(u => u.team === 'enemy' && !u.isDead).length;
+
+    if (aliveP === 0) { alert('ПОРАЖЕНИЕ!'); gameState = 'MENU'; return; }
+    if (aliveE === 0) { alert('ПОБЕДА!'); gameState = 'MENU'; return; }
+
+    const current = turnQueue.shift();
+    if (current.isDead) { nextTurn(); return; }
+    turnQueue.push(current);
+    
+    selectedAction = null;
+
+    if (current.team === 'enemy') {
+        gameState = 'ENEMY_TURN';
+        setTimeout(enemyAI, 800);
+    } else {
+        gameState = 'PLAYER_TURN';
+    }
+}
+
+function enemyAI() {
+    const activeUnit = turnQueue[turnQueue.length - 1];
+    if (activeUnit.isDead) { nextTurn(); return; }
+
+    const targets = units.filter(u => u.team === 'player' && !u.isDead);
+    if (targets.length > 0) {
+        const target = targets[Math.floor(Math.random() * targets.length)];
+        gameState = 'ANIMATING';
+        activeUnit.playAttack(() => {
+            target.takeDamage(Math.floor(Math.random() * 15) + 10);
+            nextTurn();
+        });
+    } else {
+        nextTurn();
+    }
+}
+
+function spawnFloatingText(text, x, y, color) {
+    particles.push(new FloatingText(text, x, y, color));
+}
+
+// ==========================================
+// ОТРИСОВКА
+// ==========================================
+
+function drawBackground() {
+    if (sprites.bg.complete && sprites.bg.naturalHeight !== 0) {
+        ctx.drawImage(sprites.bg, 0, 0, canvas.width, canvas.height);
+    } else {
+        // Запасной фон
+        ctx.fillStyle = '#2d5a2d'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = COLORS.bg; ctx.fillRect(0, 150, canvas.width, canvas.height);
+        ctx.fillStyle = COLORS.tree;
+        [50, 150, 800, 900].forEach(x => {
+            ctx.beginPath(); ctx.moveTo(x, 400); ctx.lineTo(x+50, 100); ctx.lineTo(x+100, 400); ctx.fill();
+        });
+    }
+}
+
+// === ОТРИСОВКА МЕНЮ ===
+function drawMenu() {
+    drawBackground(); // Рисуем фон игры затемненным
+
+    // Затемнение
+    ctx.fillStyle = COLORS.menuOverlay;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Заголовок
+    ctx.fillStyle = '#ffd700';
+    ctx.font = 'bold 60px Segoe UI';
+    ctx.textAlign = 'center';
+    ctx.shadowColor = 'black'; ctx.shadowBlur = 10;
+    ctx.fillText("TACTICAL SQUAD", canvas.width / 2, 150);
+    
+    ctx.fillStyle = 'white';
+    ctx.font = '20px Segoe UI';
+    ctx.fillText("DEMO VERSION 0.5", canvas.width / 2, 190);
+    ctx.shadowBlur = 0;
+
+    // Кнопки
+    menuButtons.forEach(btn => {
+        // Проверка наведения
+        const isHover = mouseX >= btn.x - btn.w/2 && mouseX <= btn.x + btn.w/2 &&
+                        mouseY >= btn.y - btn.h/2 && mouseY <= btn.y + btn.h/2;
+        
+        ctx.fillStyle = isHover ? COLORS.btnHover : COLORS.btnNormal;
+        ctx.fillRect(btn.x - btn.w/2, btn.y - btn.h/2, btn.w, btn.h);
+        
+        ctx.strokeStyle = '#fff'; ctx.lineWidth = 2;
+        ctx.strokeRect(btn.x - btn.w/2, btn.y - btn.h/2, btn.w, btn.h);
+
+        ctx.fillStyle = '#000';
+        ctx.font = 'bold 20px Segoe UI';
+        ctx.fillText(btn.text, btn.x, btn.y + 7);
+    });
+}
+
+// === ОТРИСОВКА ИНТЕРФЕЙСА БОЯ ===
+function drawGameUI() {
+    const activeUnit = turnQueue[turnQueue.length - 1];
+
+    // Панель очереди
+    const panelW = 400; const panelX = (canvas.width - panelW) / 2;
+    ctx.fillStyle = 'rgba(255,255,255,0.8)'; ctx.fillRect(panelX, 10, panelW, 60);
+    ctx.strokeStyle = '#333'; ctx.strokeRect(panelX, 10, panelW, 60);
+
+    drawPortrait(activeUnit, panelX + 20, 15, 50, true);
+    for (let i = 0; i < 4; i++) {
+        if (i < turnQueue.length - 1) {
+            drawPortrait(turnQueue[i], panelX + 90 + (i * 60), 20, 40, false);
+        }
+    }
+
+    // Круговое меню (только для игрока)
+    if (activeUnit.team === 'player' && gameState === 'PLAYER_TURN' && !activeUnit.isDead) {
+        drawActionMenu(activeUnit);
+    }
+
+    // Инвентарь
+    const invX = (canvas.width - 300) / 2;
+    drawItemSlot(invX, canvas.height - 90, inventory.medkit, 'ITEM_HEAL');
+    drawItemSlot(invX + 80, canvas.height - 90, inventory.grenade, 'ITEM_GRENADE');
+    
+    // Подсказка
+    ctx.fillStyle = 'white'; ctx.font = '18px Arial'; ctx.textAlign = 'center'; 
+    ctx.shadowColor="black"; ctx.shadowBlur=4;
+    if (selectedAction === 'ATTACK') ctx.fillText('ВЫБЕРИТЕ ЦЕЛЬ', canvas.width/2, 430);
+    else if (selectedAction === 'ITEM_HEAL') ctx.fillText('ВЫБЕРИТЕ СОЮЗНИКА', canvas.width/2, 430);
+    ctx.shadowBlur=0;
+}
+
+function drawPortrait(unit, x, y, size, isActive) {
+    if (!unit) return;
+    const img = unit.team === 'player' ? sprites.player : sprites.enemy;
+    ctx.save();
+    ctx.beginPath(); ctx.rect(x,y,size,size); ctx.clip();
+    
+    if (img.complete && img.naturalHeight !== 0) {
+        ctx.fillStyle = '#fff'; ctx.fillRect(x,y,size,size);
+        // Масштабируем картинку в портрет
+        ctx.drawImage(img, 0, 0, img.naturalWidth, img.naturalHeight, x, y, size, size);
+    } else {
+        ctx.fillStyle = unit.team === 'player' ? COLORS.player : COLORS.enemy;
+        ctx.fillRect(x, y, size, size);
+    }
+    ctx.restore();
+
+    ctx.strokeStyle = isActive ? '#ffcc00' : '#555';
+    ctx.lineWidth = isActive ? 3 : 1;
+    ctx.strokeRect(x, y, size, size);
+}
+
+const actions = [
+    { id: 'ATTACK', icon: '⚔️', angle: -Math.PI/2 }, 
+    { id: 'DEFEND', icon: '🛡️', angle: 0 },         
+    { id: 'SKIP', icon: '⏭️', angle: Math.PI/2 }   
+];
+
+function drawActionMenu(unit) {
+    actions.forEach(act => {
+        const ax = unit.x + Math.cos(act.angle) * 80;
+        const ay = (unit.y - 40) + Math.sin(act.angle) * 80;
+        
+        ctx.beginPath(); ctx.arc(ax, ay, 25, 0, Math.PI*2);
+        ctx.fillStyle = selectedAction === act.id ? '#ffd700' : 'white';
+        ctx.fill(); ctx.stroke();
+        
+        ctx.fillStyle = 'black'; ctx.font = '20px Arial'; 
+        ctx.fillText(act.icon, ax, ay + 7);
+        act.hitbox = { x: ax, y: ay, r: 25 };
+    });
+}
+
+function drawItemSlot(x, y, item, actionId) {
+    const size = 60;
+    ctx.fillStyle = (selectedAction === actionId) ? '#ffd700' : '#eee';
+    ctx.fillRect(x, y, size, size); ctx.strokeRect(x, y, size, size);
+    
+    ctx.fillStyle = 'black'; ctx.font = '24px Arial'; 
+    ctx.fillText(item.icon, x + 30, y + 35);
+    ctx.font = 'bold 12px Arial'; 
+    ctx.fillText(item.count, x + 50, y + 50);
+    
+    item.hitbox = { x: x, y: y, w: size, h: size, actionId: actionId };
+}
+
+// ==========================================
+// УПРАВЛЕНИЕ
+// ==========================================
+
+// Отслеживание мыши для эффекта Hover в меню
+canvas.addEventListener('mousemove', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    mouseX = e.clientX - rect.left;
+    mouseY = e.clientY - rect.top;
+    
+    if (gameState === 'MENU') {
+        const isHover = menuButtons.some(btn => 
+            mouseX >= btn.x - btn.w/2 && mouseX <= btn.x + btn.w/2 &&
+            mouseY >= btn.y - btn.h/2 && mouseY <= btn.y + btn.h/2
+        );
+        canvas.style.cursor = isHover ? 'pointer' : 'default';
+    } else {
+        canvas.style.cursor = 'crosshair';
+    }
+});
+
+canvas.addEventListener('mousedown', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+
+    // --- ОБРАБОТКА МЕНЮ ---
+    if (gameState === 'MENU') {
+        menuButtons.forEach(btn => {
+            if (mx >= btn.x - btn.w/2 && mx <= btn.x + btn.w/2 &&
+                my >= btn.y - btn.h/2 && my <= btn.y + btn.h/2) {
+                
+                if (btn.action === 'START') {
+                    initGame();
+                } else if (btn.action === 'FEEDBACK') {
+                    window.open(FEEDBACK_LINK, '_blank');
+                }
+            }
+        });
+        return;
+    }
+
+    // --- ОБРАБОТКА ИГРЫ ---
+    if (gameState !== 'PLAYER_TURN') return;
+
+    // 1. Меню действий
+    let actionClicked = false;
+    actions.forEach(act => {
+        if (act.hitbox) {
+            const dx = mx - act.hitbox.x; const dy = my - act.hitbox.y;
+            if (dx*dx + dy*dy < act.hitbox.r * act.hitbox.r) {
+                handleActionClick(act.id);
+                actionClicked = true;
+            }
+        }
+    });
+    if (actionClicked) return;
+
+    // 2. Инвентарь
+    if ([inventory.medkit, inventory.grenade].some(item => {
+        if (item.hitbox && mx >= item.hitbox.x && mx <= item.hitbox.x + item.hitbox.w &&
+            my >= item.hitbox.y && my <= item.hitbox.y + item.hitbox.h) {
+                if (item.count > 0) handleActionClick(item.hitbox.actionId);
+                return true;
+        }
+    })) return;
+
+    // 3. Выбор цели
+    if (selectedAction) {
+        units.forEach(u => {
+            if (u.isDead) return;
+            if (mx >= u.x - 40 && mx <= u.x + 40 &&
+                my >= u.y - 60 && my <= u.y + 60) {
+                handleTargetClick(u);
+            }
+        });
+    }
+});
+
+function handleActionClick(actionId) {
+    if (actionId === 'SKIP') {
+        nextTurn();
+    } else if (actionId === 'DEFEND') {
+        const u = turnQueue[turnQueue.length-1];
+        u.armor = Math.min(u.armor + 15, u.maxArmor);
+        spawnFloatingText('+15 Броня', u.x, u.y - 50, 'blue');
+        nextTurn();
+    } else {
+        selectedAction = (selectedAction === actionId) ? null : actionId;
+    }
+}
+
+function handleTargetClick(target) {
+    const activeUnit = turnQueue[turnQueue.length - 1];
+    
+    if (selectedAction === 'ATTACK' && target.team === 'enemy') {
+        gameState = 'ANIMATING';
+        activeUnit.playAttack(() => {
+            target.takeDamage(Math.floor(Math.random() * 20) + 15);
+            nextTurn();
+        });
+    } 
+    else if (selectedAction === 'ITEM_HEAL' && target.team === 'player') {
+        target.heal(40);
+        inventory.medkit.count--;
+        nextTurn();
+    } 
+    else if (selectedAction === 'ITEM_GRENADE' && target.team === 'enemy') {
+        gameState = 'ANIMATING';
+        activeUnit.playAttack(() => {
+            target.takeDamage(50);
+            inventory.grenade.count--;
+            nextTurn();
+        });
+    }
+}
+
+// ==========================================
+// ГЛАВНЫЙ ЦИКЛ
+// ==========================================
+
+function loop() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    if (gameState === 'MENU') {
+        drawMenu();
+    } else {
+        drawBackground();
+        
+        const sortedUnits = [...units].sort((a,b) => a.y - b.y);
+        sortedUnits.forEach(u => { u.update(); u.draw(); });
+        
+        particles.forEach((p, index) => {
+            p.update(); p.draw();
+            if (p.life <= 0) particles.splice(index, 1);
+        });
+
+        drawGameUI();
+    }
+
+    requestAnimationFrame(loop);
+}
+
+// Запуск
+loop();
+
+</script>
+</body>
+</html>
