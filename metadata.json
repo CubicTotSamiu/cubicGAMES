@@ -1,0 +1,6 @@
+{
+  "name": "cubic.games Retro Portal",
+  "description": "A nostalgic early 2000s and Windows XP inspired desktop environment and retro gaming portal for cubic.games.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
