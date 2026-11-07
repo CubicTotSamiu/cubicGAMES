@@ -1,0 +1,193 @@
+[gd_scene format=3 uid="uid://dm0shopmodal01"]
+
+[ext_resource type="Script" path="res://scenes/modals/shop_modal.gd" id="1_shop"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
+bg_color = Color(0.1, 0.12, 0.15, 0.98)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.0, 0.8, 1, 0.6)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[node name="ShopModal" type="PanelContainer"]
+custom_minimum_size = Vector2(700, 520)
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -350.0
+offset_top = -260.0
+offset_right = 350.0
+offset_bottom = 260.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_bg")
+script = ExtResource("1_shop")
+
+[node name="VBox" type="VBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Header" type="HBoxContainer" parent="VBox"]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="VBox/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 18
+text = "🛒 МАГАЗИН АПГРЕЙДОВ РАБОЧЕГО МЕСТА"
+
+[node name="CloseBtn" type="Button" parent="VBox/Header"]
+custom_minimum_size = Vector2(30, 30)
+layout_mode = 2
+text = "✕"
+
+[node name="HSeparator" type="HSeparator" parent="VBox"]
+layout_mode = 2
+
+[node name="Grid" type="GridContainer" parent="VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/h_separation = 16
+theme_override_constants/v_separation = 12
+columns = 2
+
+[node name="ChairItem" type="VBoxContainer" parent="VBox/Grid"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Name" type="Label" parent="VBox/Grid/ChairItem"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.84, 0, 1)
+text = "🪑 Рабочее кресло"
+
+[node name="Desc" type="Label" parent="VBox/Grid/ChairItem"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "Снижает расход энергии за ход."
+
+[node name="Btn" type="Button" parent="VBox/Grid/ChairItem"]
+layout_mode = 2
+text = "Улучшить"
+
+[node name="MonitorItem" type="VBoxContainer" parent="VBox/Grid"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Name" type="Label" parent="VBox/Grid/MonitorItem"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.84, 0, 1)
+text = "🖥️ Дисплеи и Аналитика"
+
+[node name="Desc" type="Label" parent="VBox/Grid/MonitorItem"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "Открывает гистограмму объемов, RSI и тепловую карту."
+
+[node name="Btn" type="Button" parent="VBox/Grid/MonitorItem"]
+layout_mode = 2
+text = "Улучшить"
+
+[node name="UPSItem" type="VBoxContainer" parent="VBox/Grid"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Name" type="Label" parent="VBox/Grid/UPSItem"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.9, 0.5, 1)
+text = "⚡ Оптоволокно + ИБП"
+
+[node name="Desc" type="Label" parent="VBox/Grid/UPSItem"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "Убирает проскальзывание и защищает от отключения света."
+
+[node name="Btn" type="Button" parent="VBox/Grid/UPSItem"]
+layout_mode = 2
+text = "Купить ($350)"
+
+[node name="WalletItem" type="VBoxContainer" parent="VBox/Grid"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Name" type="Label" parent="VBox/Grid/WalletItem"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.9, 0.5, 1)
+text = "🔒 Холодный кошелек (Ledger)"
+
+[node name="Desc" type="Label" parent="VBox/Grid/WalletItem"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "100% защита депозита от взломов и банов бирж."
+
+[node name="Btn" type="Button" parent="VBox/Grid/WalletItem"]
+layout_mode = 2
+text = "Купить ($120)"
+
+[node name="CatItem" type="VBoxContainer" parent="VBox/Grid"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Name" type="Label" parent="VBox/Grid/CatItem"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.6, 0.2, 1)
+text = "🐈 Рыжий кот на столе"
+
+[node name="Desc" type="Label" parent="VBox/Grid/CatItem"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "-5% Тильта каждый ход (но 1% шанс закрыть сделку лапой)."
+
+[node name="Btn" type="Button" parent="VBox/Grid/CatItem"]
+layout_mode = 2
+text = "Приютить ($100)"
+
+[node name="Vip1Item" type="VBoxContainer" parent="VBox/Grid"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Name" type="Label" parent="VBox/Grid/Vip1Item"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.5, 1, 1)
+text = "📢 Сигналы 1000x (Дешевый VIP)"
+
+[node name="Desc" type="Label" parent="VBox/Grid/Vip1Item"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "Часто манипулирует толпой, но иногда угадывает тренд."
+
+[node name="Btn" type="Button" parent="VBox/Grid/Vip1Item"]
+layout_mode = 2
+text = "Подписка ($20)"
+
+[node name="Vip2Item" type="VBoxContainer" parent="VBox/Grid"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Name" type="Label" parent="VBox/Grid/Vip2Item"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.84, 0, 1)
+text = "🐋 Whale Alpha Club (Элитный инсайд)"
+
+[node name="Desc" type="Label" parent="VBox/Grid/Vip2Item"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "За 1 ход предупреждает о реальных движениях рынка."
+
+[node name="Btn" type="Button" parent="VBox/Grid/Vip2Item"]
+layout_mode = 2
+text = "Подписка ($100)"
+
+[connection signal="pressed" from="VBox/Header/CloseBtn" to="." method="_on_close_btn_pressed"]
+[connection signal="pressed" from="VBox/Grid/ChairItem/Btn" to="." method="_on_chair_btn_pressed"]
+[connection signal="pressed" from="VBox/Grid/MonitorItem/Btn" to="." method="_on_monitor_btn_pressed"]
+[connection signal="pressed" from="VBox/Grid/UPSItem/Btn" to="." method="_on_ups_btn_pressed"]
+[connection signal="pressed" from="VBox/Grid/WalletItem/Btn" to="." method="_on_wallet_btn_pressed"]
+[connection signal="pressed" from="VBox/Grid/CatItem/Btn" to="." method="_on_cat_btn_pressed"]
