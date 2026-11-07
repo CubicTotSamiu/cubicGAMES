@@ -1,0 +1,469 @@
+[gd_scene format=3 uid="uid://c0maindashboard01"]
+
+[ext_resource type="Script" path="res://scenes/dashboard.gd" id="1_dash"]
+[ext_resource type="Script" path="res://scenes/components/candlestick_chart.gd" id="2_chart"]
+[ext_resource type="PackedScene" path="res://scenes/modals/shop_modal.tscn" id="3_shop"]
+[ext_resource type="PackedScene" path="res://scenes/modals/exchange_modal.tscn" id="4_ex"]
+[ext_resource type="PackedScene" path="res://scenes/modals/loan_modal.tscn" id="5_loan"]
+[ext_resource type="PackedScene" path="res://scenes/modals/mode_select_modal.tscn" id="6_mode"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_topbar"]
+bg_color = Color(0.09, 0.1, 0.13, 1)
+border_width_bottom = 2
+border_color = Color(0.18, 0.2, 0.26, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bottom"]
+bg_color = Color(0.08, 0.09, 0.12, 1)
+border_width_top = 2
+border_color = Color(0.18, 0.2, 0.26, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_sidebar"]
+bg_color = Color(0.07, 0.08, 0.1, 1)
+border_width_left = 2
+border_color = Color(0.18, 0.2, 0.26, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_toast"]
+bg_color = Color(0.1, 0.12, 0.16, 0.95)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0, 0.8, 1, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[node name="Dashboard" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_dash")
+
+[node name="MainLayout" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 0
+
+[node name="TopBar" type="PanelContainer" parent="MainLayout"]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_topbar")
+
+[node name="Margin" type="MarginContainer" parent="MainLayout/TopBar"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 6
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 6
+
+[node name="HBox" type="HBoxContainer" parent="MainLayout/TopBar/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Logo" type="Label" parent="MainLayout/TopBar/Margin/HBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 17
+text = "⚡ TRUE TRADER"
+
+[node name="VSeparator" type="VSeparator" parent="MainLayout/TopBar/Margin/HBox"]
+layout_mode = 2
+
+[node name="TimeLabel" type="Label" parent="MainLayout/TopBar/Margin/HBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0, 1)
+text = "День 1 | 00:00"
+
+[node name="VSeparator2" type="VSeparator" parent="MainLayout/TopBar/Margin/HBox"]
+layout_mode = 2
+
+[node name="NetWorthLabel" type="Label" parent="MainLayout/TopBar/Margin/HBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.9, 0.5, 1)
+text = "Капитал: $1000.00"
+
+[node name="Spacer" type="Control" parent="MainLayout/TopBar/Margin/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ExchangeOpt" type="OptionButton" parent="MainLayout/TopBar/Margin/HBox"]
+custom_minimum_size = Vector2(170, 0)
+layout_mode = 2
+
+[node name="ShopBtn" type="Button" parent="MainLayout/TopBar/Margin/HBox"]
+layout_mode = 2
+text = "🛒 Магазин"
+
+[node name="WalletBtn" type="Button" parent="MainLayout/TopBar/Margin/HBox"]
+layout_mode = 2
+text = "🏦 Биржи / Кошельки"
+
+[node name="LoanBtn" type="Button" parent="MainLayout/TopBar/Margin/HBox"]
+layout_mode = 2
+text = "💸 Займы"
+
+[node name="ModeBtn" type="Button" parent="MainLayout/TopBar/Margin/HBox"]
+layout_mode = 2
+text = "⚙️ Режим"
+
+[node name="Body" type="HBoxContainer" parent="MainLayout"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 0
+
+[node name="CenterArea" type="VBoxContainer" parent="MainLayout/Body"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 3.0
+theme_override_constants/separation = 0
+
+[node name="CoinSelectionBar" type="PanelContainer" parent="MainLayout/Body/CenterArea"]
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+
+[node name="HBox" type="HBoxContainer" parent="MainLayout/Body/CenterArea/CoinSelectionBar"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="CoinOpt" type="OptionButton" parent="MainLayout/Body/CenterArea/CoinSelectionBar/HBox"]
+custom_minimum_size = Vector2(160, 0)
+layout_mode = 2
+
+[node name="PriceLabel" type="Label" parent="MainLayout/Body/CenterArea/CoinSelectionBar/HBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.9, 0.5, 1)
+theme_override_font_sizes/font_size = 15
+text = "$64,000"
+
+[node name="VSep" type="VSeparator" parent="MainLayout/Body/CenterArea/CoinSelectionBar/HBox"]
+layout_mode = 2
+
+[node name="PosInfoLabel" type="Label" parent="MainLayout/Body/CenterArea/CoinSelectionBar/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Позиций нет"
+
+[node name="ChartContainer" type="PanelContainer" parent="MainLayout/Body/CenterArea"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Chart" type="Control" parent="MainLayout/Body/CenterArea/ChartContainer"]
+layout_mode = 2
+script = ExtResource("2_chart")
+
+[node name="BottomTradingPanel" type="PanelContainer" parent="MainLayout/Body/CenterArea"]
+custom_minimum_size = Vector2(0, 105)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_bottom")
+
+[node name="Margin" type="MarginContainer" parent="MainLayout/Body/CenterArea/BottomTradingPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 8
+
+[node name="HBox" type="HBoxContainer" parent="MainLayout/Body/CenterArea/BottomTradingPanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="MarginBox" type="VBoxContainer" parent="MainLayout/Body/CenterArea/BottomTradingPanel/Margin/HBox"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="MainLayout/Body/CenterArea/BottomTradingPanel/Margin/HBox/MarginBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "Маржа позиции ($):"
+
+[node name="MarginSpin" type="SpinBox" parent="MainLayout/Body/CenterArea/BottomTradingPanel/Margin/HBox/MarginBox"]
+custom_minimum_size = Vector2(110, 0)
+layout_mode = 2
+max_value = 100000.0
+step = 10.0
+value = 100.0
+prefix = "$"
+
+[node name="LeverageBox" type="VBoxContainer" parent="MainLayout/Body/CenterArea/BottomTradingPanel/Margin/HBox"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="MainLayout/Body/CenterArea/BottomTradingPanel/Margin/HBox/LeverageBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "Кредитное плечо:"
+
+[node name="HBox" type="HBoxContainer" parent="MainLayout/Body/CenterArea/BottomTradingPanel/Margin/HBox/LeverageBox"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="LevX2" type="Button" parent="MainLayout/Body/CenterArea/BottomTradingPanel/Margin/HBox/LeverageBox/HBox"]
+layout_mode = 2
+text = "x2"
+
+[node name="LevX5" type="Button" parent="MainLayout/Body/CenterArea/BottomTradingPanel/Margin/HBox/LeverageBox/HBox"]
+layout_mode = 2
+text = "x5"
+
+[node name="LevX10" type="Button" parent="MainLayout/Body/CenterArea/BottomTradingPanel/Margin/HBox/LeverageBox/HBox"]
+layout_mode = 2
+text = "x10"
+
+[node name="LevX25" type="Button" parent="MainLayout/Body/CenterArea/BottomTradingPanel/Margin/HBox/LeverageBox/HBox"]
+layout_mode = 2
+text = "x25"
+
+[node name="LevX50" type="Button" parent="MainLayout/Body/CenterArea/BottomTradingPanel/Margin/HBox/LeverageBox/HBox"]
+layout_mode = 2
+text = "x50"
+
+[node name="LevX100" type="Button" parent="MainLayout/Body/CenterArea/BottomTradingPanel/Margin/HBox/LeverageBox/HBox"]
+layout_mode = 2
+text = "x100"
+
+[node name="TPSLBox" type="VBoxContainer" parent="MainLayout/Body/CenterArea/BottomTradingPanel/Margin/HBox"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="MainLayout/Body/CenterArea/BottomTradingPanel/Margin/HBox/TPSLBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "Тейк / Стоп ($):"
+
+[node name="HBox" type="HBoxContainer" parent="MainLayout/Body/CenterArea/BottomTradingPanel/Margin/HBox/TPSLBox"]
+layout_mode = 2
+
+[node name="TPSpin" type="SpinBox" parent="MainLayout/Body/CenterArea/BottomTradingPanel/Margin/HBox/TPSLBox/HBox"]
+custom_minimum_size = Vector2(95, 0)
+layout_mode = 2
+max_value = 1000000.0
+step = 10.0
+prefix = "TP:"
+
+[node name="SLSpin" type="SpinBox" parent="MainLayout/Body/CenterArea/BottomTradingPanel/Margin/HBox/TPSLBox/HBox"]
+custom_minimum_size = Vector2(95, 0)
+layout_mode = 2
+max_value = 1000000.0
+step = 10.0
+prefix = "SL:"
+
+[node name="OrderActions" type="HBoxContainer" parent="MainLayout/Body/CenterArea/BottomTradingPanel/Margin/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="LongBtn" type="Button" parent="MainLayout/Body/CenterArea/BottomTradingPanel/Margin/HBox/OrderActions"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0, 1, 0.4, 1)
+theme_override_font_sizes/font_size = 16
+text = "🟢 LONG"
+
+[node name="ShortBtn" type="Button" parent="MainLayout/Body/CenterArea/BottomTradingPanel/Margin/HBox/OrderActions"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 0.3, 0.4, 1)
+theme_override_font_sizes/font_size = 16
+text = "🔴 SHORT"
+
+[node name="CloseBtn" type="Button" parent="MainLayout/Body/CenterArea/BottomTradingPanel/Margin/HBox/OrderActions"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 13
+text = "✕ Закрыть"
+
+[node name="TurnBox" type="VBoxContainer" parent="MainLayout/Body/CenterArea/BottomTradingPanel/Margin/HBox"]
+custom_minimum_size = Vector2(170, 0)
+layout_mode = 2
+
+[node name="NextTurnBtn" type="Button" parent="MainLayout/Body/CenterArea/BottomTradingPanel/Margin/HBox/TurnBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(1, 0.85, 0, 1)
+theme_override_font_sizes/font_size = 14
+text = "СЛЕДУЮЩИЙ ШАГ
+(+4 часа)"
+
+[node name="Sidebar" type="PanelContainer" parent="MainLayout/Body"]
+custom_minimum_size = Vector2(340, 0)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_sidebar")
+
+[node name="VBox" type="VBoxContainer" parent="MainLayout/Body/Sidebar"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="SurvivalSection" type="VBoxContainer" parent="MainLayout/Body/Sidebar/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="Title" type="Label" parent="MainLayout/Body/Sidebar/VBox/SurvivalSection"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.8, 1, 1)
+text = "📊 СОСТОЯНИЕ И ЖИЗНЬ"
+
+[node name="Bars" type="VBoxContainer" parent="MainLayout/Body/Sidebar/VBox/SurvivalSection"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="EnergyLabel" type="Label" parent="MainLayout/Body/Sidebar/VBox/SurvivalSection/Bars"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "⚡ Бодрость (Энергия):"
+
+[node name="EnergyBar" type="ProgressBar" parent="MainLayout/Body/Sidebar/VBox/SurvivalSection/Bars"]
+custom_minimum_size = Vector2(0, 14)
+layout_mode = 2
+value = 100.0
+show_percentage = false
+
+[node name="HungerLabel" type="Label" parent="MainLayout/Body/Sidebar/VBox/SurvivalSection/Bars"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "🍔 Сытость:"
+
+[node name="HungerBar" type="ProgressBar" parent="MainLayout/Body/Sidebar/VBox/SurvivalSection/Bars"]
+custom_minimum_size = Vector2(0, 14)
+layout_mode = 2
+value = 100.0
+show_percentage = false
+
+[node name="TiltLabel" type="Label" parent="MainLayout/Body/Sidebar/VBox/SurvivalSection/Bars"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "🤬 Тильт / Стресс:"
+
+[node name="TiltBar" type="ProgressBar" parent="MainLayout/Body/Sidebar/VBox/SurvivalSection/Bars"]
+custom_minimum_size = Vector2(0, 14)
+layout_mode = 2
+show_percentage = false
+
+[node name="GearInfo" type="Label" parent="MainLayout/Body/Sidebar/VBox/SurvivalSection"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+theme_override_font_sizes/font_size = 10
+text = "Табуретка | Старый монитор CRT"
+autowrap_mode = 2
+
+[node name="ActionButtons" type="GridContainer" parent="MainLayout/Body/Sidebar/VBox/SurvivalSection"]
+layout_mode = 2
+columns = 2
+
+[node name="DoshirakBtn" type="Button" parent="MainLayout/Body/Sidebar/VBox/SurvivalSection/ActionButtons"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 11
+text = "🍜 Доширак ($5)"
+
+[node name="PizzaBtn" type="Button" parent="MainLayout/Body/Sidebar/VBox/SurvivalSection/ActionButtons"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 11
+text = "🍕 Пицца ($15)"
+
+[node name="SleepBtn" type="Button" parent="MainLayout/Body/Sidebar/VBox/SurvivalSection/ActionButtons"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 11
+text = "😴 Спать 8ч (+2 хода)"
+
+[node name="RentBtn" type="Button" parent="MainLayout/Body/Sidebar/VBox/SurvivalSection/ActionButtons"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 11
+text = "Аренда ($150)"
+
+[node name="HSeparator" type="HSeparator" parent="MainLayout/Body/Sidebar/VBox"]
+layout_mode = 2
+
+[node name="NewsSection" type="VBoxContainer" parent="MainLayout/Body/Sidebar/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 6
+
+[node name="Title" type="Label" parent="MainLayout/Body/Sidebar/VBox/NewsSection"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.84, 0, 1)
+text = "📰 ЛЕНТА НОВОСТЕЙ И СОБЫТИЙ"
+
+[node name="VIPHint" type="Label" parent="MainLayout/Body/Sidebar/VBox/NewsSection"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 11
+autowrap_mode = 2
+
+[node name="Scroll" type="ScrollContainer" parent="MainLayout/Body/Sidebar/VBox/NewsSection"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="NewsFeed" type="VBoxContainer" parent="MainLayout/Body/Sidebar/VBox/NewsSection/Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="Modals" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="ShopModal" parent="Modals" instance=ExtResource("3_shop")]
+visible = false
+layout_mode = 1
+
+[node name="ExchangeModal" parent="Modals" instance=ExtResource("4_ex")]
+visible = false
+layout_mode = 1
+
+[node name="LoanModal" parent="Modals" instance=ExtResource("5_loan")]
+visible = false
+layout_mode = 1
+
+[node name="ModeSelectModal" parent="Modals" instance=ExtResource("6_mode")]
+visible = false
+layout_mode = 1
+
+[node name="Toast" type="PanelContainer" parent="."]
+visible = false
+custom_minimum_size = Vector2(360, 48)
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -180.0
+offset_top = -68.0
+offset_right = 180.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_toast")
+
+[node name="Label" type="Label" parent="Toast"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+
+[connection signal="pressed" from="MainLayout/TopBar/Margin/HBox/ShopBtn" to="." method="_on_shop_pressed"]
+[connection signal="pressed" from="MainLayout/TopBar/Margin/HBox/WalletBtn" to="." method="_on_wallet_pressed"]
+[connection signal="pressed" from="MainLayout/TopBar/Margin/HBox/LoanBtn" to="." method="_on_loan_pressed"]
+[connection signal="pressed" from="MainLayout/TopBar/Margin/HBox/ModeBtn" to="." method="_on_mode_btn_pressed"]
+[connection signal="pressed" from="MainLayout/Body/CenterArea/BottomTradingPanel/Margin/HBox/OrderActions/LongBtn" to="." method="_on_long_pressed"]
+[connection signal="pressed" from="MainLayout/Body/CenterArea/BottomTradingPanel/Margin/HBox/OrderActions/ShortBtn" to="." method="_on_short_pressed"]
+[connection signal="pressed" from="MainLayout/Body/CenterArea/BottomTradingPanel/Margin/HBox/OrderActions/CloseBtn" to="." method="_on_close_pressed"]
+[connection signal="pressed" from="MainLayout/Body/CenterArea/BottomTradingPanel/Margin/HBox/TurnBox/NextTurnBtn" to="." method="_on_next_turn_pressed"]
+[connection signal="pressed" from="MainLayout/Body/Sidebar/VBox/SurvivalSection/ActionButtons/DoshirakBtn" to="." method="_on_doshirak_pressed"]
+[connection signal="pressed" from="MainLayout/Body/Sidebar/VBox/SurvivalSection/ActionButtons/PizzaBtn" to="." method="_on_pizza_pressed"]
+[connection signal="pressed" from="MainLayout/Body/Sidebar/VBox/SurvivalSection/ActionButtons/SleepBtn" to="." method="_on_sleep_pressed"]
+[connection signal="pressed" from="MainLayout/Body/Sidebar/VBox/SurvivalSection/ActionButtons/RentBtn" to="." method="_on_pay_rent_pressed"]

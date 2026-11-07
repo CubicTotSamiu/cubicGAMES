@@ -1,0 +1,167 @@
+[gd_scene format=3 uid="uid://dm0modeselectmodal01"]
+
+[ext_resource type="Script" path="res://scenes/modals/mode_select_modal.gd" id="1_mode"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
+bg_color = Color(0.08, 0.09, 0.12, 0.98)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.0, 0.8, 1, 0.7)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[node name="ModeSelectModal" type="PanelContainer"]
+custom_minimum_size = Vector2(720, 520)
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -360.0
+offset_top = -260.0
+offset_right = 360.0
+offset_bottom = 260.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_bg")
+script = ExtResource("1_mode")
+
+[node name="VBox" type="VBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="Title" type="Label" parent="VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 20
+text = "ВЫБЕРИТЕ РЕЖИМ ИГРЫ: TRUE TRADER"
+horizontal_alignment = 1
+
+[node name="ModesContainer" type="HBoxContainer" parent="VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 12
+
+[node name="CasualBox" type="VBoxContainer" parent="VBox/ModesContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Title" type="Label" parent="VBox/ModesContainer/CasualBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.9, 0.5, 1)
+theme_override_font_sizes/font_size = 16
+text = "🟢 КАЗУАЛ"
+horizontal_alignment = 1
+
+[node name="Desc" type="Label" parent="VBox/ModesContainer/CasualBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_font_sizes/font_size = 11
+text = "• Старт: $100
+• Цель: $1,000
+• Отключены голод, сон, аренда, счета и баны бирж.
+• Чистая торговля по графику и новостям."
+autowrap_mode = 2
+
+[node name="Btn" type="Button" parent="VBox/ModesContainer/CasualBox"]
+layout_mode = 2
+text = "Играть (Казуал)"
+
+[node name="RealismBox" type="VBoxContainer" parent="VBox/ModesContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Title" type="Label" parent="VBox/ModesContainer/RealismBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.8, 0, 1)
+theme_override_font_sizes/font_size = 16
+text = "🟡 РЕАЛИЗМ"
+horizontal_alignment = 1
+
+[node name="Desc" type="Label" parent="VBox/ModesContainer/RealismBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_font_sizes/font_size = 11
+text = "• Старт: $1,000, табуретка, CRT монитор
+• Цель: $10,000 или выжить 30 дней
+• Включены: сон, еда, тильт, аренда, кредиты, взломы и KYC бирж, апгрейды."
+autowrap_mode = 2
+
+[node name="Btn" type="Button" parent="VBox/ModesContainer/RealismBox"]
+layout_mode = 2
+text = "Играть (Реализм)"
+
+[node name="CustomBox" type="VBoxContainer" parent="VBox/ModesContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Title" type="Label" parent="VBox/ModesContainer/CustomBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.5, 1, 1)
+theme_override_font_sizes/font_size = 16
+text = "🟣 ПЕСОЧНИЦА"
+horizontal_alignment = 1
+
+[node name="Desc" type="Label" parent="VBox/ModesContainer/CustomBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_font_sizes/font_size = 11
+text = "• Полная настройка правил
+• Изменение стартового баланса и цели
+• Включение / отключение параметров выживания."
+autowrap_mode = 2
+
+[node name="Btn" type="Button" parent="VBox/ModesContainer/CustomBox"]
+layout_mode = 2
+text = "Настроить"
+
+[node name="CustomSettings" type="VBoxContainer" parent="VBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Grid" type="GridContainer" parent="VBox/CustomSettings"]
+layout_mode = 2
+columns = 2
+
+[node name="StartBalLbl" type="Label" parent="VBox/CustomSettings/Grid"]
+layout_mode = 2
+text = "Стартовый баланс ($):"
+
+[node name="StartBalSpin" type="SpinBox" parent="VBox/CustomSettings/Grid"]
+layout_mode = 2
+max_value = 100000.0
+step = 100.0
+value = 1000.0
+
+[node name="TargetBalLbl" type="Label" parent="VBox/CustomSettings/Grid"]
+layout_mode = 2
+text = "Цель по капиталу ($):"
+
+[node name="TargetBalSpin" type="SpinBox" parent="VBox/CustomSettings/Grid"]
+layout_mode = 2
+max_value = 1000000.0
+step = 500.0
+value = 10000.0
+
+[node name="SurvivalCheck" type="CheckBox" parent="VBox/CustomSettings/Grid"]
+layout_mode = 2
+button_pressed = true
+text = "Параметры выживания (сон, еда, тильт)"
+
+[node name="BansCheck" type="CheckBox" parent="VBox/CustomSettings/Grid"]
+layout_mode = 2
+button_pressed = true
+text = "Риски блокировок и взломов бирж"
+
+[node name="StartCustomBtn" type="Button" parent="VBox/CustomSettings"]
+layout_mode = 2
+text = "Начать игру в режиме Песочницы"
+
+[connection signal="pressed" from="VBox/ModesContainer/CasualBox/Btn" to="." method="_on_casual_pressed"]
+[connection signal="pressed" from="VBox/ModesContainer/RealismBox/Btn" to="." method="_on_realism_pressed"]
+[connection signal="pressed" from="VBox/ModesContainer/CustomBox/Btn" to="." method="_on_custom_pressed"]
+[connection signal="pressed" from="VBox/CustomSettings/StartCustomBtn" to="." method="_on_start_custom_pressed"]
